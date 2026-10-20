@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>6 Months ♡</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fbf9f5;
+      --card-bg: #ffffff;
+      --text-dark: #2d2a29;
+      --text-muted: #8c857f;
+      --rose: #f0718f;
+      /* card scale: 1 on desktop, shrinks on small phones (set from JS) */
+      --s: 1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(#e7dfd5 1px, transparent 1px);
+      background-size: 24px 24px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden; /* page scrolls down, never sideways */
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      color: var(--text-dark);
+      position: relative;
+    }
+
+    /* Top Aesthetic Pill (stays visible while scrolling) */
+    header {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 8px 18px;
+      border-radius: 999px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      white-space: nowrap;
+    }
+
+    .heart-icon {
+      color: var(--rose);
+      font-size: 1.1rem;
+      animation: heartbeat 2s ease infinite;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+    }
+
+    h1 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: #3d3835;
+    }
+
+    .tidy-btn {
+      background: #f3eee7;
+      border: none;
+      color: #655d56;
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tidy-btn:hover {
+      background: #eae2d8;
+      color: #3a3430;
+    }
+
+    /* Bottom subtle instruction */
+    .hint {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100000;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 6px 14px;
+      border-radius: 20px;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      white-space: nowrap;
+    }
+
+    /* Board Area: height is set from JS so it grows to fit every photo */
+    #desk {
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      position: relative;
+    }
+
+    /* Polaroid Outer Box (all sizes scale with --s) */
+    .polaroid {
+      position: absolute;
+      width: calc(200px * var(--s));
+      height: calc(255px * var(--s));
+      perspective: 1000px;
+      touch-action: pan-y; /* vertical swipes scroll the page */
+      -webkit-tap-highlight-color: transparent;
+      cursor: grab;
+      transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.2s ease;
+    }
+
+    .polaroid.dragging {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    .polaroid.dragging .card-front,
+    .polaroid.dragging .card-back {
+      box-shadow:
+        0 18px 32px -6px rgba(60, 40, 30, 0.16),
+        0 4px 10px -2px rgba(60, 40, 30, 0.06);
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.34, 1.3, 0.64, 1);
+      border-radius: 12px;
+    }
+
+    .polaroid.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    /* Faces */
+    .card-front, .card-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      background: var(--card-bg);
+      padding: calc(12px * var(--s)) calc(12px * var(--s)) calc(18px * var(--s)) calc(12px * var(--s));
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 
+        0 10px 25px -4px rgba(60, 40, 30, 0.08),
+        0 3px 8px -2px rgba(60, 40, 30, 0.04);
+      border: 1px solid rgba(240, 235, 227, 0.7);
+    }
+
+    /* Cute Washi Tapes */
+    .tape {
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 58px;
+      height: 18px;
+      border-radius: 2px;
+      opacity: 0.85;
+      z-index: 5;
+      pointer-events: none;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .tape.tape-peach  { background: #fed8c8; }
+    .tape.tape-butter { background: #feeab3; }
+    .tape.tape-matcha { background: #d7e8cb; }
+    .tape.tape-berry  { background: #ffd2dc; }
+    .tape.tape-sky    { background: #cfe7fa; }
+
+    /* Photo Slot */
+    .photo-frame {
+      width: 100%;
+      height: calc(175px * var(--s));
+      background: #f6f3ee;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+
+    .photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    pointer-events: none;
+    -webkit-user-drag: none;
+    }
+
+
+    /* Cute Handwritten Captions */
+    .caption {
+      margin-top: calc(10px * var(--s));
+      font-family: 'Caveat', cursive;
+      font-size: calc(1.25rem * var(--s));
+      font-weight: 600;
+      color: #4a4441;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    /* Back Face / Notes */
+    .card-back {
+      transform: rotateY(180deg);
+      background: #fffdfc;
+      justify-content: space-between;
+      padding: calc(22px * var(--s)) calc(18px * var(--s)) calc(16px * var(--s)) calc(18px * var(--s));
+    }
+
+    .note-tag {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--rose);
+      background: #fff0f3;
+      padding: 3px 8px;
+      border-radius: 12px;
+      align-self: flex-start;
+    }
+
+    .note-text {
+      font-family: 'Caveat', cursive;
+      font-size: calc(1.35rem * var(--s));
+      line-height: 1.35;
+      color: #3b3430;
+      margin: auto 0;
+      text-align: center;
+    }
+
+    .note-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: max(0.6rem, calc(0.72rem * var(--s)));
+      color: #a49d96;
+      border-top: 1px dashed #efe8df;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="heart-icon">♥</span>
+    <h1>Our 6th Monthsary</h1>
+    <button class="tidy-btn" id="tidy-toggle">Tidy Up</button>
+  </header>
+
+  <div id="desk"></div>
+
+  <div class="hint">drag photos • tap to read secret note</div>
+
+  <script>
+    // Procedural sound synthesizer (zero external audio files)
+    const AudioEngine = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+      paperRustle() {
+        this.init();
+        const bufferSize = this.ctx.sampleRate * 0.04;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 1100;
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.03, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start();
+      },
+      softPop() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(420, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(140, this.ctx.currentTime + 0.05);
+
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+      }
+    };
+
+    // Replace image links & notes with your favorite memories
+    const memories = [
+      {
+        title: "Where it began ✨",
+        tape: "tape-peach",
+        img: "Babi/1.jpg",
+        tag: "Month 1",
+        date: "05.15",
+        note: "Still get butterfly knots thinking about the day we decided this was us."
+      },
+      {
+        title: "Late night giggles",
+        tape: "tape-matcha",
+        img: "Babi/2.jpg",
+        tag: "Month 2",
+        date: "06.14",
+        note: "The talks where neither of us wanted to say goodnight first."
+      },
+      {
+        title: "My favorite smile",
+        tape: "tape-butter",
+        img: "Babi/3.png",
+        tag: "Month 3",
+        date: "07.21",
+        note: "Your smile will always be the quickest cure for my worst days."
+      },
+      {
+        title: "When you do your dentures",
+        tape: "tape-sky",
+        img: "Babi/4.jpg",
+        tag: "Month 4",
+        date: "08.09",
+        note: "I enjoy watching you work on your dentures."
+      },
+      {
+        title: "My safest place",
+        tape: "tape-berry",
+        img: "Babi/5.jpg",
+        tag: "Month 5",
+        date: "09.18",
+        note: "Thank you for being so patient, gentle, and warm with me always."
+      },
+      {
+        title: "Happy 6 monthsary Babi ♡",
+        tape: "tape-peach",
+        img: "Babi/6.jpg",
+        tag: "Month 6",
+        date: "10.13",
+        note: "Half a year with you flew by. I'd choose you over and over again."
+      }
+    ];
+
+    const desk = document.getElementById('desk');
+    const cards = [];
+    let highestZ = 10;
+    let isTidy = false;
+
+    const GAP = 14;        // space between cards
+    const HOLD_MS = 220;   // touch: hold this long to pick a photo up (swipe = scroll)
+
+    // ---------- Responsive sizing ----------
+    function getMetrics() {
+      const vw = document.documentElement.clientWidth;
+      const wide = vw >= 680;
+      const cols = wide ? 3 : 2;
+      // On phones, shrink cards just enough for 2 per row
+      const s = wide ? 1 : Math.max(0.68, Math.min(1, (vw - GAP * 3) / 400));
+      return { vw, cols, s, cardW: 200 * s, cardH: 255 * s };
+    }
+
+    let M = getMetrics();
+
+    function applyScale() {
+      M = getMetrics();
+      document.documentElement.style.setProperty('--s', M.s);
+    }
+
+    // Make the desk tall enough for every card so the page can scroll
+    function updateDeskHeight(growOnly = false) {
+      let bottom = 0;
+      cards.forEach((c) => {
+        bottom = Math.max(bottom, parseFloat(c.style.top) + M.cardH);
+      });
+      let h = bottom + 90; // room under the last row for the hint pill
+      if (growOnly) h = Math.max(h, parseFloat(desk.style.height) || 0);
+      desk.style.height = `${h}px`;
+    }
+
+    // ---------- Build cards ----------
+    memories.forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = 'polaroid';
+      card.dataset.scatterRot = (Math.random() - 0.5) * 18;
+      card.style.zIndex = index + 1;
+
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="tape ${item.tape}"></div>
+            <div class="photo-frame">
+              <img src="${item.img}" alt="${item.title}" />
+            </div>
+            <div class="caption">${item.title}</div>
+          </div>
+          <div class="card-back">
+            <div class="tape ${item.tape}"></div>
+            <span class="note-tag">${item.tag}</span>
+            <div class="note-text">${item.note}</div>
+            <div class="note-footer">
+              <span>forever & always</span>
+              <span>${item.date}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener('contextmenu', (e) => e.preventDefault());
+      desk.appendChild(card);
+      cards.push(card);
+      bindDragAndFlip(card);
+    });
+
+    // ---------- Layouts ----------
+    // Casual "scattered" look: each card gets its own slot, then a little random wobble,
+    // so nothing is hidden underneath and everything is reachable by scrolling.
+    function scatterLayout() {
+      const rows = Math.ceil(cards.length / M.cols);
+      const padX = 16, padY = 84, padBottom = 70;
+      const slotW = (M.vw - padX * 2) / M.cols;
+      const slotH = Math.max(M.cardH + 24, (window.innerHeight - padY - padBottom) / rows);
+      const slackX = Math.max(0, slotW - M.cardW);
+      const slackY = Math.max(0, slotH - M.cardH);
+
+      cards.forEach((card, i) => {
+        const col = i % M.cols;
+        const row = Math.floor(i / M.cols);
+        let x = padX + col * slotW + (slotW - M.cardW) / 2 + (Math.random() - 0.5) * slackX;
+        let y = padY + row * slotH + (slotH - M.cardH) / 2 + (Math.random() - 0.5) * slackY;
+        x = Math.min(Math.max(0, x), Math.max(0, M.vw - M.cardW));
+        card.dataset.scatterX = x;
+        card.dataset.scatterY = y;
+      });
+    }
+
+    function applyScatter() {
+      cards.forEach((card) => {
+        card.style.left = `${card.dataset.scatterX}px`;
+        card.style.top = `${card.dataset.scatterY}px`;
+        card.style.transform = `rotate(${card.dataset.scatterRot}deg)`;
+      });
+      updateDeskHeight();
+    }
+
+    // Neat grid in the center
+    function tidyLayout() {
+      const startX = (M.vw - (M.cols * M.cardW + (M.cols - 1) * GAP)) / 2;
+      const startY = 80;
+      cards.forEach((card, i) => {
+        const col = i % M.cols;
+        const row = Math.floor(i / M.cols);
+        card.style.left = `${startX + col * (M.cardW + GAP)}px`;
+        card.style.top = `${startY + row * (M.cardH + GAP)}px`;
+        card.style.transform = `rotate(0deg)`;
+      });
+      updateDeskHeight();
+    }
+
+    // ---------- Touch & Mouse Drag + 3D Flip ----------
+    // Mouse: press and drag right away.
+    // Touch: swipe = scroll the page, tap = flip, press & hold briefly = pick up and drag.
+    function bindDragAndFlip(el) {
+      let activeId = null;
+      let isTouch = false;
+      let isDragging = false;
+      let tapValid = false;
+      let holdTimer = null;
+      let moved = false;
+      let startX, startY, origX, origY;
+
+      const baseRot = () => (isTidy ? 0 : parseFloat(el.dataset.scatterRot || 0));
+      const clearHold = () => { clearTimeout(holdTimer); holdTimer = null; };
+
+      function pickUp() {
+        isDragging = true;
+        highestZ++;
+        el.style.zIndex = highestZ;
+        el.classList.add('dragging');
+        if (isTouch) {
+          el.style.transform = `scale(1.06) rotate(${baseRot()}deg)`;
+          if (navigator.vibrate) navigator.vibrate(8);
+        }
+        AudioEngine.paperRustle();
+      }
+
+      // Put the card down and reset state. Returns what was happening.
+      function release() {
+        const wasDragging = isDragging;
+        const wasTap = tapValid && !isDragging;
+        clearHold();
+        if (activeId !== null) {
+          try { el.releasePointerCapture(activeId); } catch (_) {}
+        }
+        activeId = null;
+        isDragging = false;
+        tapValid = false;
+        el.classList.remove('dragging');
+        el.style.transform = `scale(1) rotate(${baseRot()}deg)`;
+
+        if (wasDragging) {
+          // Remember where the user put it (only in scatter mode)
+          if (!isTidy) {
+            el.dataset.scatterX = parseFloat(el.style.left);
+            el.dataset.scatterY = parseFloat(el.style.top);
+          }
+          updateDeskHeight();
+        }
+        return { wasDragging, wasTap };
+      }
+
+      el.addEventListener('pointerdown', (e) => {
+        if (activeId !== null) return; // ignore a second finger
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+        activeId = e.pointerId;
+        isTouch = e.pointerType === 'touch';
+        moved = false;
+        tapValid = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        origX = parseFloat(el.style.left);
+        origY = parseFloat(el.style.top);
+        AudioEngine.init(); // must happen inside the touch/click for iOS sound
+
+        if (isTouch) {
+          const id = e.pointerId;
+          holdTimer = setTimeout(() => {
+            holdTimer = null;
+            try { el.setPointerCapture(id); } catch (_) {}
+            pickUp();
+          }, HOLD_MS);
+        } else {
+          el.setPointerCapture(e.pointerId);
+          pickUp();
+        }
+      });
+
+      el.addEventListener('pointermove', (e) => {
+        if (e.pointerId !== activeId) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        if (!isDragging) {
+          // Finger moved before the hold finished: that's a scroll, not a drag
+          if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+            clearHold();
+            tapValid = false;
+          }
+          return;
+        }
+
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+          moved = true;
+        }
+
+        const maxX = Math.max(0, desk.clientWidth - M.cardW);
+        const newX = Math.min(Math.max(0, origX + dx), maxX);
+        const newY = Math.max(0, origY + dy);
+        el.style.left = `${newX}px`;
+        el.style.top = `${newY}px`;
+        el.style.transform = `scale(1.04) rotate(${baseRot() + (dx * 0.04)}deg)`;
+        updateDeskHeight(true); // dragging low makes the page taller
+      });
+
+      // Once a card is picked up, stop the page from scrolling under the finger
+      el.addEventListener('touchmove', (e) => {
+        if (isDragging) e.preventDefault();
+      }, { passive: false });
+
+      el.addEventListener('pointerup', (e) => {
+        if (e.pointerId !== activeId) return;
+        const { wasDragging, wasTap } = release();
+
+        // Barely moved = tap, so flip the card
+        if ((wasDragging && !moved) || wasTap) {
+          el.classList.toggle('flipped');
+          AudioEngine.softPop();
+        } else if (wasDragging) {
+          AudioEngine.paperRustle();
+        }
+      });
+
+      // Browser took over (e.g. the page started scrolling)
+      el.addEventListener('pointercancel', (e) => {
+        if (e.pointerId !== activeId) return;
+        release();
+      });
+    }
+
+    // Toggle between neat grid / casual scatter
+    const tidyBtn = document.getElementById('tidy-toggle');
+    tidyBtn.addEventListener('click', () => {
+      isTidy = !isTidy;
+      tidyBtn.innerText = isTidy ? "Scatter" : "Tidy Up";
+      AudioEngine.paperRustle();
+
+      if (isTidy) {
+        tidyLayout();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        applyScatter();
+      }
+    });
+
+    // Phones get a more accurate hint
+    if (window.matchMedia('(pointer: coarse)').matches) {
+      document.querySelector('.hint').textContent = 'scroll • hold & drag • tap for secret note';
+    }
+
+    // Re-fit when the screen width changes (rotation, resizing).
+    // Height-only changes (mobile address bar hiding) are ignored on purpose.
+    let lastW = document.documentElement.clientWidth;
+    window.addEventListener('resize', () => {
+      const w = document.documentElement.clientWidth;
+      if (Math.abs(w - lastW) < 24) return;
+      lastW = w;
+      applyScale();
+      scatterLayout();
+      if (isTidy) tidyLayout(); else applyScatter();
+    });
+
+    // First layout
+    applyScale();
+    scatterLayout();
+    applyScatter();
+  </script>
+</body>
+</html>
